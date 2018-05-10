@@ -3,19 +3,22 @@ package gt;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
+import java.util.TreeMap;
+import java.lang.Math;
+import java.math.BigDecimal;
 
+import javax.crypto.Mac;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.xml.sax.SAXException;
 
 public class GenerateText {
-	
-	//TigerCorpusReader reader = new TigerCorpusReader();
-	
 	
 	public static void main(String[] args) throws XPathExpressionException, ParserConfigurationException, SAXException, IOException {
 		// TODO Auto-generated method stub
@@ -28,9 +31,16 @@ public class GenerateText {
 		
 		List<TaggedSentence> corpus = reader.getCorpus();
 		Map<String, Integer> wordFreq = generateText.word_freq(corpus);
-		generateText.maxProbWord(wordFreq);
 		
-		System.out.println(generateText.probWord(",",wordFreq));
+		Map<String, BigDecimal> allWordsProb = generateText.probAllWords(wordFreq);
+		TreeMap<String, BigDecimal> sortedAllWordsProb = generateText.sortMapByValue(allWordsProb);
+		
+		int length = 5;
+		for (int i=0; i < length; i++)
+		{
+			String word = generateText.smple(sortedAllWordsProb);
+			System.out.print(word + " ");
+		}
 		
 		//generateText.probAllWords(wordFreq);
 		
@@ -43,7 +53,6 @@ public class GenerateText {
 				System.out.print(sentence.getToken(i) + "\t"+sentence.getPOS(i)+"\n");
 			}
 		}*/
-			
 	}
 	
 	public Map<String, Integer> word_freq(List<TaggedSentence> corpus){
@@ -61,27 +70,23 @@ public class GenerateText {
 		int totalFerq = 0;
 		for (Map.Entry<String, Integer> entry : wordFreq.entrySet()) {
 			totalFerq += entry.getValue();
-//			System.out.println(entry.getKey() + ": " + entry.getValue());
 		}
 		wordFreq.put("total_freq", totalFerq);
 		
 		return wordFreq;
 	}
 	
-	public double probWord(String word, Map<String, Integer> wordFreq) {
-		double prob = wordFreq.get(word)/wordFreq.get("total_freq")*1.00000000;
-		//System.out.println(wordFreq.get("total_freq"));
+	public BigDecimal probWord(String word, Map<String, Integer> wordFreq) {
+		BigDecimal prob = new BigDecimal((double)wordFreq.get(word)/(double)wordFreq.get("total_freq"));
 		return prob;
 	}
 	
-	public Map<String, Double> probAllWords(Map<String, Integer> wordFreq) {
-		Map<String, Double> allWordsProb = new HashMap<>();
+	public Map<String, BigDecimal> probAllWords(Map<String, Integer> wordFreq) {
+		Map<String, BigDecimal> allWordsProb = new HashMap<>();
 		for (Map.Entry<String, Integer> entry : wordFreq.entrySet()) {
-			allWordsProb.put(entry.getKey(), probWord(entry.getKey(), wordFreq));
-		}
-		
-		for (Map.Entry<String, Double> entry : allWordsProb.entrySet()) {
-			//System.out.println(entry.getKey() + ": " + entry.getValue());
+			if(entry.getKey() != "total_freq") {
+				allWordsProb.put(entry.getKey(), probWord(entry.getKey(), wordFreq));
+			}
 		}
 		return allWordsProb;
 	}
@@ -99,8 +104,30 @@ public class GenerateText {
 				System.out.println(entry.getKey());
 			}
 		}
-		
-		System.out.println("asdasdasdgjhg "+max);
 		return max;
 	}
+	
+	public String smple(Map<String, BigDecimal> allWordsProb) {
+		Random rand = new Random();
+		BigDecimal random = new BigDecimal((double)rand.nextFloat());
+		BigDecimal sum = new BigDecimal(0);
+		
+		for(Map.Entry<String, BigDecimal> entry : allWordsProb.entrySet()) {
+			sum = sum.add(entry.getValue());
+			if(sum.subtract(random).compareTo(new BigDecimal(0)) >= 0) {
+				return entry.getKey();
+			}
+		}
+		return null;
+	}
+	
+	public static TreeMap<String, BigDecimal> sortMapByValue(Map<String, BigDecimal> map){
+		Comparator<String> comparator = new ValueComparator(map);
+		//TreeMap is a map sorted by its keys. 
+		//The comparator is used to sort the TreeMap by keys. 
+		TreeMap<String, BigDecimal> result = new TreeMap<String, BigDecimal>(comparator);
+		result.putAll(map);
+		return result;
+	}
+	
 }
