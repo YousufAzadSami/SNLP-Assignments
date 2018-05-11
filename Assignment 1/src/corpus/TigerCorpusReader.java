@@ -1,4 +1,4 @@
-package gt;
+package corpus;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -16,6 +16,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.xml.sax.SAXException;
+
+import corpus.TaggedSentence;
 
 public class TigerCorpusReader implements CorpusReader {
 	

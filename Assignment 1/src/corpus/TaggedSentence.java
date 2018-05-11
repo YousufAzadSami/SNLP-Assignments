@@ -1,4 +1,4 @@
-package gt;
+package corpus;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -92,7 +92,7 @@ public class TaggedSentence {
 	}
 	
 	
-	public String toString1()
+	public String toString()
 	{
 		String string = "";
 		for (int i=0; i < tokens.size(); i++)
@@ -110,10 +110,10 @@ public class TaggedSentence {
 	}
 	
 	
-	@Override
-	public String toString() {
-		return "TaggedSentence [tokens=" + tokens + ", tags=" + tags + ", prob=" + prob + "]";
-	}
+//	@Override
+//	public String toString() {
+//		return "TaggedSentence [tokens=" + tokens + ", tags=" + tags + ", prob=" + prob + "]";
+//	}
 	
 	
 

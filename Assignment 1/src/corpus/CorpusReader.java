@@ -1,4 +1,4 @@
-package gt;
+package corpus;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -8,6 +8,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.xml.sax.SAXException;
+
+import corpus.TaggedSentence;
 
 public interface CorpusReader {
 	
