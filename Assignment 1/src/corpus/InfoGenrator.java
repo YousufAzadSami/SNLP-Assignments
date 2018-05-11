@@ -15,6 +15,8 @@ public class InfoGenrator {
 
 	private Map<String, Integer> wordsSortedByFerquency = new HashMap<>();
 	private Map<String, Integer> tagsSortedByFerquency = new HashMap<>();
+	
+	private Map<String, Map<String, Integer>> wordTagsFerquency = new HashMap<>();
 
 	public Map<String, Integer> getWordsFerquency() {
 		return wordsFerquency;
@@ -71,6 +73,23 @@ public class InfoGenrator {
 	public void setTagsSortedByFerquency(Map<String, Integer> tagsSortedByFerquency) {
 		this.tagsSortedByFerquency = tagsSortedByFerquency;
 	}
+	
+	public Map<String, Map<String, Integer>> getWordTagsFerquency() {
+		return wordTagsFerquency;
+	}
+
+	public void setWordTagsFerquency(Map<String, Map<String, Integer>> wordTagsFerquency) {
+		this.wordTagsFerquency = wordTagsFerquency;
+	}
+	
+	public void setWordTagsFerquency(String pk, String vk, int value) {
+		if(this.wordTagsFerquency.containsKey(pk)) {
+			this.wordTagsFerquency.get(pk).put(vk, value);
+		}else {
+			this.wordTagsFerquency.put(pk, new HashMap<String, Integer>());
+			this.wordTagsFerquency.get(pk).put(vk, value);
+		}
+	}
 
 	@SuppressWarnings("unchecked")
 	public InfoGenrator(List<TaggedSentence> corpus) {
@@ -79,8 +98,11 @@ public class InfoGenrator {
 		computeTotalWordFrequency();
 		computeTagsFrequency(corpus);
 		computeTotalTagFrequency();
+		
 		setWordsSortedByFerquency(SortMap.sortByValueAsc(getWordsFerquency()));
 		setTagsSortedByFerquency(SortMap.sortByValueAsc(getTagsFerquency()));
+		
+		computeWordTagsFrequency(corpus);
 	}
 
 	private void computeWordsFrequency(List<TaggedSentence> corpus) {
@@ -118,6 +140,25 @@ public class InfoGenrator {
 	private void computeTotalTagFrequency() {
 		for (Map.Entry<String, Integer> entry : getTagsFerquency().entrySet()) {
 			setTotalTagFerqency(getTotalTagFerqency() + entry.getValue());
+		}
+	}
+	
+	private void computeWordTagsFrequency(List<TaggedSentence> corpus) {
+		for (TaggedSentence sentence : corpus) {
+			for( int i=0; i < sentence.size(); i++) {
+				if(getWordTagsFerquency().containsKey(sentence.tokens.get(i))) {
+					if(getWordTagsFerquency().get(sentence.tokens.get(i)).containsKey(sentence.tags.get(i))) {
+						setWordTagsFerquency(sentence.tokens.get(i),sentence.tags.get(i), getWordTagsFerquency().get(sentence.tokens.get(i)).get(sentence.tags.get(i))+1);
+					}
+					else {
+						setWordTagsFerquency(sentence.tokens.get(i),sentence.tags.get(i), 1);
+					}
+				}
+				else {
+					setWordTagsFerquency(sentence.tokens.get(i),sentence.tags.get(i), 1);
+				}
+			}
+			
 		}
 	}
 
