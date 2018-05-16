@@ -1,7 +1,6 @@
 package generateText;
 
 import java.util.List;
-import java.util.Map;
 import java.io.IOException;
 
 import javax.xml.parsers.ParserConfigurationException;

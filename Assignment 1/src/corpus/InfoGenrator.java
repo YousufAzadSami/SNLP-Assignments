@@ -153,6 +153,7 @@ public class InfoGenrator {
 		return wordTagsSortedByProbability;
 	}
 
+	@SuppressWarnings("unchecked")
 	public void setWordTagsSortedByProbability(Map<String, Map<String, Double>> wordTagsSortedByProbability) {
 		for(Map.Entry<String, Map<String, Double>> en : wordTagsSortedByProbability.entrySet()) {
 			this.wordTagsSortedByProbability.put(en.getKey(), SortMap.sortByValueAsc(en.getValue()));
@@ -226,21 +227,21 @@ public class InfoGenrator {
 		}
 		biTagsFerquencyStr += "\n\t],\n";		
 		
-//		return "InfoGenrator [\n\twordsFerquency=" + wordsFerquencyStr + "\ttotalWordFerq=" + totalWordFerq
-//				+ ", tagsFerquency=" + tagsFerquencyStr + "\ttotalTagFerqency=" + totalTagFerqency
-//				+ ", wordsSortedByFerquency=" + wordsSortedByFerquencyStr + "\ttagsSortedByFerquency="
-//				+ tagsSortedByFerquencyStr + "\twordTagsFerquency=" + wordsTagsFerquencyStr + "\tbiTagsFerquency="
-//				+ biTagsFerquencyStr + "]";
+		return "InfoGenrator [\n\twordsFerquency=" + wordsFerquencyStr + "\ttotalWordFerq=" + totalWordFerq
+				+ ", tagsFerquency=" + tagsFerquencyStr + "\ttotalTagFerqency=" + totalTagFerqency
+				+ ", wordsSortedByFerquency=" + wordsSortedByFerquencyStr + "\ttagsSortedByFerquency="
+				+ tagsSortedByFerquencyStr + "\twordTagsFerquency=" + wordsTagsFerquencyStr + "\tbiTagsFerquency="
+				+ biTagsFerquencyStr + "]";
 
 		
-		return "InfoGenrator [wordsFerquency=" + wordsFerquency + ", totalWordFerq=" + totalWordFerq
-				+ ", tagsFerquency=" + tagsFerquency + ", totalTagFerqency=" + totalTagFerqency
-				+ ", wordsSortedByFerquency=" + wordsSortedByFerquency + ", tagsSortedByFerquency="
-				+ tagsSortedByFerquency + ", wordTagsFerquency=" + wordTagsFerquency + ", biTagsFerquency="
-				+ biTagsFerquency + ", conditionalTagsprobability=" + conditionalTagsprobability
-				+ ", conditionalTagsSortedByProbability=" + conditionalTagsSortedByProbability
-				+ ", wordTagsProbability=" + wordTagsProbability + ", wordTagsSortedByProbability="
-				+ wordTagsSortedByProbability + "]";
+//		return "InfoGenrator [wordsFerquency=" + wordsFerquency + ", totalWordFerq=" + totalWordFerq
+//				+ ", tagsFerquency=" + tagsFerquency + ", totalTagFerqency=" + totalTagFerqency
+//				+ ", wordsSortedByFerquency=" + wordsSortedByFerquency + ", tagsSortedByFerquency="
+//				+ tagsSortedByFerquency + ", wordTagsFerquency=" + wordTagsFerquency + ", biTagsFerquency="
+//				+ biTagsFerquency + ", conditionalTagsprobability=" + conditionalTagsprobability
+//				+ ", conditionalTagsSortedByProbability=" + conditionalTagsSortedByProbability
+//				+ ", wordTagsProbability=" + wordTagsProbability + ", wordTagsSortedByProbability="
+//				+ wordTagsSortedByProbability + "]";
 	}
 
 	private void computeWordsFrequency(List<TaggedSentence> corpus) {
@@ -304,13 +305,13 @@ public class InfoGenrator {
 			for (int i = 0; i < sentence.size(); i++) {
 				String k = "";
 				if(i == 0) {
-//					k = "-1 " + sentence.tags.get(0);
-//					if (getBiTagsFerquency().containsKey(k)) {
-//						setBiTagsFerquency(k, getBiTagsFerquency().get(k) + 1);
-//					}
-//					else {
-//						setBiTagsFerquency(k, 1);
-//					}
+					k = "-1 " + sentence.tags.get(0);
+					if (getBiTagsFerquency().containsKey(k)) {
+						setBiTagsFerquency(k, getBiTagsFerquency().get(k) + 1);
+					}
+					else {
+						setBiTagsFerquency(k, 1);
+					}
 				}
 				else {
 					k = sentence.tags.get(i - 1) + " " + sentence.tags.get(i);
@@ -329,7 +330,7 @@ public class InfoGenrator {
 		Map<String, Integer> btf = getBiTagsFerquency();
 		Map<String, Integer> tf = getTagsFerquency();
 		for (Map.Entry<String, Integer> entry : btf.entrySet()){
-			double prob = Probability.computeProbability((double)entry.getValue(), (double)tf.get(entry.getKey().split(" ")[0]));
+			double prob = Probability.computeProbability((double)entry.getValue(), (double)tf.get(entry.getKey().split(" ")[1]));
 			setConditionalTagsprobability(entry.getKey(),prob);
 		}
 	}
