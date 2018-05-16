@@ -16,12 +16,12 @@ class ValueComparator implements Comparator {
 	public int compare(Object keyA, Object keyB) {
 		Comparable valueA = (Comparable) map.get(keyA);
 		Comparable valueB = (Comparable) map.get(keyB);
-		if (valueA.compareTo(valueB) == 0 && valueA.compareTo(0) >0) {
-			return valueA.compareTo(0);
+		if (valueA.compareTo(valueB) == 0) {
+			return 1;
 		}
-		else if (valueA.compareTo(valueB) == 0 && valueA.compareTo(0) == 0) {
-			return valueA.compareTo(-1);
-		}
+//		else if (valueA.compareTo(valueB) == 0 && valueA.compareTo(null) == 0) {
+//			return valueA.compareTo(null);
+//		}
 		return valueA.compareTo(valueB);
 	}
 	

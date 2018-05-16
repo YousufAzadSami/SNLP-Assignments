@@ -1,6 +1,7 @@
 package generateText;
 
 import java.util.List;
+import java.util.Map;
 import java.io.IOException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -28,14 +29,22 @@ public class GenerateText {
 		
 		InfoGenrator infoGenrator = new InfoGenrator(corpus);
 		
+		System.out.println("Text generated using on the univariate word distribution:");
 		int length = 5;
 		for (int i=0; i < length; i++)
 		{
-			String word = sampling.smple(infoGenrator.getWordsSortedByFerquency(), infoGenrator.getTotalWordFerq());
+			String word = sampling.univariateSmple(infoGenrator.getWordsSortedByFerquency(), infoGenrator.getTotalWordFerq());
 			System.out.print(word + " ");
 		}
-		
-		//generateText.probAllWords(wordFreq);
+
+		System.out.println();
+
+		System.out.println("Text generated using on the conditional word distribution:");
+		for (int i=0; i < length; i++)
+		{
+			String tag = sampling.conditionalSmple(infoGenrator.getConditionalTagsSortedByProbability(), infoGenrator.getWordTagsSortedByProbability());
+			System.out.print(tag + " ");
+		}
 		
 		/*List<TaggedSentence> sample = reader.getSentences(10, 12);
 		

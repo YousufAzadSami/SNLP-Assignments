@@ -4,8 +4,13 @@ import java.math.BigDecimal;
 
 public class Probability {
 	
-	public BigDecimal computeIndividualWordProbability(String word, int wordFrequency, int totalWordFrequency) {
-		BigDecimal prob = new BigDecimal((double)wordFrequency/(double)totalWordFrequency);
+	public BigDecimal computeProbability(int frequency, int totalFrequency) {
+		BigDecimal prob = new BigDecimal((double)frequency/(double)totalFrequency);
+		return prob;
+	}
+	
+	public static Double computeProbability(double frequency, double totalFrequency) {
+		Double prob = frequency/totalFrequency;
 		return prob;
 	}
 	
