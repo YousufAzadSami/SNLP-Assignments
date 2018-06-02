@@ -19,9 +19,6 @@ class ValueComparator implements Comparator {
 		if (valueA.compareTo(valueB) == 0) {
 			return 1;
 		}
-//		else if (valueA.compareTo(valueB) == 0 && valueA.compareTo(null) == 0) {
-//			return valueA.compareTo(null);
-//		}
 		return valueA.compareTo(valueB);
 	}
 	
