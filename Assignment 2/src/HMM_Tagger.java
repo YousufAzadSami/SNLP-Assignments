@@ -281,17 +281,10 @@ public class HMM_Tagger implements POS_Tagger {
 	}
 
 	public double b(String tag, String token) {
-
-//		for (HashMap.Entry<String, HashMap<String, Double>> pEntry : state_emmissions.entrySet()) {
-//			System.out.println(pEntry.getKey() + " = [\n");
-//			for (HashMap.Entry<String, Double> cEntry : pEntry.getValue().entrySet()) {
-//				System.out.println("\t" + cEntry.getKey() + " = " + cEntry.getValue() + "\n");
-//			}
-//			System.out.println("\\n]");
-//		}
+		
 		// implement b method. Emission
 
-		return 0;
+		return state_emmissions.get(tag).get(token);
 
 	}
 
@@ -299,7 +292,7 @@ public class HMM_Tagger implements POS_Tagger {
 
 		// implement a method. Transition
 
-		return 0;
+		return state_transitions.get(tag).get(nextTag);
 	}
 
 //	@Override
