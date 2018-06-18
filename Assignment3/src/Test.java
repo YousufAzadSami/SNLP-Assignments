@@ -18,9 +18,10 @@ public class Test {
 			
 		TigerCorpusReader reader = new TigerCorpusReader();
 		
-		reader.read("/Users/cimiano/data/tigercorpus2/corpus/tiger_release_dec05.xml");
+		String corpusPath = "../data/tiger_release_dec05.xml";
+		reader.read(corpusPath);
 		
-		BufferedWriter output = new BufferedWriter(new FileWriter("/Users/cimiano/data/tigercorpus2/corpus/tiger_release_dec05.xml.csv"));
+		BufferedWriter output = new BufferedWriter(new FileWriter(corpusPath));
         
 		reader.toFile(output);
         
@@ -83,7 +84,7 @@ public class Test {
 		
 	    evaluator.evaluate(tagger, test);
 	    
-	    System.out.print(evaluator.getStatistics());
+	    System.out.println(evaluator.getStatistics());
 	    
 	 
 	}
