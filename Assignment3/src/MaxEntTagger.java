@@ -80,26 +80,8 @@ public class MaxEntTagger implements POS_Tagger{
 	double[] empiricalCounts(List<TaggedSentence> data)
 	{
 		double[] empiricalCounts = new double[model.size()];
-		
-		for (TaggedSentence sentence: data)
-		{
-			for (int i=0; i < sentence.size(); i++)
-			{
-
-				Set<String> features = extractor.extractFeatures(sentence, i);
-				
-				for (String feature: features)
-				{
-					updateEmpiricalCounts(empiricalCounts, feature, sentence.getPOS(i), new Integer(1));
-					
-				}
-				
-			}
-		}
-		// System.out.print("Empirical Counts:\n");
-		// print(empiricalCounts);
-		return empiricalCounts;
-		
+	        
+                return empiricalCounts; 	
 	}
 	
 
@@ -123,45 +105,7 @@ public class MaxEntTagger implements POS_Tagger{
 	double[] modelExpectations(double[] model, List<TaggedSentence> data)
 	{
 		// System.out.print("Computing model expectations!\n");
-	
-		List<Set<String>> featureList = new ArrayList<Set<String>>();
-		
-		this.model.updateModel(model);
-		
-		double prob;
-	
 		double[] expectations = new double[model.length];
-		
-		Set<String> features;
-		
-		for (TaggedSentence sentence: data)
-		{
-			for (int i=0; i < sentence.size(); i ++)
-			{
-				featureList.add(extractor.extractFeatures(sentence, i));
-			}
-			
-		}
-		
-		
-		for (int i=0; i < featureList.size(); i++)
-		{
-				features = featureList.get(i);
-				
-				for (String tag: this.model.getLabels())
-				{
-					prob = this.model.computeProb(features, tag);
-					// System.out.println("Probability: "+prob);
-				
-					for (String feature: features)
-					{
-						expectations[this.model.getFeatureIndex(feature, tag)] += prob;
-					}
-				}
-							
-		}
-		//System.out.print("Expected Counts:\n");
-		// print(expectations);
 		return expectations;
 	}
 
