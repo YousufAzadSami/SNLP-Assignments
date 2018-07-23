@@ -243,7 +243,7 @@ public class HMM_Tagger implements POS_Tagger {
 
         //int gamma[][] = new int[sentence.size()][k];
 
-        TaggedSentence tagged_sentence = new TaggedSentence(sentence);
+        TaggedSentence tagged_sentence = new TaggedSentence();
 
         // Implement Viterbi
 
@@ -268,8 +268,9 @@ public class HMM_Tagger implements POS_Tagger {
 
                     for (Map.Entry<String, List<Map<String, String>>> vEntry : viterbiMatrix.entrySet()) {
                         tmpList = vEntry.getValue();
-                        double transition_prob = a(tmpList.get(i - 1).get("prev_tag"), entry.getKey());
-                        double v_prob = entry.getValue() * transition_prob * Double.parseDouble(tmpList.get(i - 1).get("prob"));
+                        //System.out.println("sentence: " + sentence.size() + " - list: " + tmpList.size());
+                        double transition_prob = a(tmpList.get(i - 2).get("prev_tag"), entry.getKey());
+                        double v_prob = entry.getValue() * transition_prob * Double.parseDouble(tmpList.get(i - 2).get("prob"));
 
                         if (max_v_prob < v_prob) {
                             max_v_prob = v_prob;
@@ -278,7 +279,7 @@ public class HMM_Tagger implements POS_Tagger {
                     }
 
                     tmpMap.put("prob", Double.toString(max_v_prob));
-                    tmpMap.put("tag", max_prev_tag);
+                    tmpMap.put("prev_tag", max_prev_tag);
                     tmpList.add(tmpMap);
                     viterbiMatrix.put(entry.getKey(), tmpList);
                 }
@@ -287,8 +288,28 @@ public class HMM_Tagger implements POS_Tagger {
         }
 
 
+        double max_v_prob = 0;
+        String max_prev_tag = "";
         for (Map.Entry<String, List<Map<String, String>>> vEntry : viterbiMatrix.entrySet()) {
             System.out.print("sentence: " + sentence.size() + " - " + "list: " + vEntry.getValue().size());
+            double v_prob = Double.parseDouble(vEntry.getValue().get(sentence.size() - 1).get("prob"));
+
+            if (max_v_prob < v_prob) {
+                max_v_prob = v_prob;
+                max_prev_tag = vEntry.getValue().get(sentence.size() - 1).get("prev_tag");
+            }
+        }
+
+        List<String> sentence_tag = new ArrayList<>();
+        sentence_tag.add(max_prev_tag);
+
+
+        for (int i = sentence.size() - 2, j = 0; i >= 0; i--, j++) {
+            sentence_tag.add(viterbiMatrix.get(sentence_tag.get(j)).get(i).get("prev_tag"));
+        }
+
+        for (int i = 0, j = sentence.size() - 1; i < sentence.size(); i++, j--) {
+            tagged_sentence.add(sentence.getToken(i), sentence_tag.get(j));
         }
 
         return tagged_sentence;
@@ -328,13 +349,13 @@ public class HMM_Tagger implements POS_Tagger {
 
         // implement b method. Emission
         Map<String, Double> tagOfToken = new HashMap<>();
-        if (!tag.equalsIgnoreCase("unkwn")) {
-            for (Map.Entry<String, HashMap<String, Double>> entry : state_emmissions.entrySet()) {
-                if (entry.getValue().containsKey(token)) {
-                    tagOfToken.put(entry.getKey(), entry.getValue().get(token));
-                }
+        //if (!tag.equalsIgnoreCase("unkwn")) {
+        for (Map.Entry<String, HashMap<String, Double>> entry : state_emmissions.entrySet()) {
+            if (entry.getValue().containsKey(token)) {
+                tagOfToken.put(entry.getKey(), entry.getValue().get(token));
             }
         }
+        //}
 
         //state_emmissions.get(tag).get(token)
         return tagOfToken;
