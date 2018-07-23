@@ -81,7 +81,7 @@ public class MaxEntTagger implements POS_Tagger{
 	{
 		double[] empiricalCounts = new double[model.size()];
 	        
-                return empiricalCounts; 	
+                return empiricalCounts;
 	}
 	
 

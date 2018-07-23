@@ -1,365 +1,405 @@
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 public class HMM_Tagger implements POS_Tagger {
 
-	HashMap<String, HashMap<String, Integer>> state_transition_counts;
-	HashMap<String, HashMap<String, Integer>> state_emmission_counts;
+    HashMap<String, HashMap<String, Integer>> state_transition_counts;
+    HashMap<String, HashMap<String, Integer>> state_emmission_counts;
 
-	HashMap<String, Integer> state_transition_total;
-	HashMap<String, Integer> state_emmission_total;
+    HashMap<String, Integer> state_transition_total;
+    HashMap<String, Integer> state_emmission_total;
 
-	HashMap<String, HashMap<String, Double>> state_transitions;
-	HashMap<String, HashMap<String, Double>> state_emmissions;
+    HashMap<String, HashMap<String, Double>> state_transitions;
+    HashMap<String, HashMap<String, Double>> state_emmissions;
 
-	HashMap<String, Integer> pos_index;
-	HashMap<Integer, String> inv_pos_index;
+    HashMap<String, Integer> pos_index;
+    HashMap<Integer, String> inv_pos_index;
 
-	HashMap<String, Integer> token_freq;
+    HashMap<String, Integer> token_freq;
 
-	public void train(List<TaggedSentence> tagged_sentences) {
+    public void train(List<TaggedSentence> tagged_sentences) {
 
-		state_transition_counts = new HashMap<String, HashMap<String, Integer>>();
-		state_emmission_counts = new HashMap<String, HashMap<String, Integer>>();
+        state_transition_counts = new HashMap<String, HashMap<String, Integer>>();
+        state_emmission_counts = new HashMap<String, HashMap<String, Integer>>();
 
-		state_transition_total = new HashMap<String, Integer>();
-		state_emmission_total = new HashMap<String, Integer>();
+        state_transition_total = new HashMap<String, Integer>();
+        state_emmission_total = new HashMap<String, Integer>();
 
-		state_transitions = new HashMap<String, HashMap<String, Double>>();
-		state_emmissions = new HashMap<String, HashMap<String, Double>>();
+        state_transitions = new HashMap<String, HashMap<String, Double>>();
+        state_emmissions = new HashMap<String, HashMap<String, Double>>();
 
-		token_freq = new HashMap<String, Integer>();
+        token_freq = new HashMap<String, Integer>();
 
-		pos_index = new HashMap<String, Integer>();
+        pos_index = new HashMap<String, Integer>();
 
-		inv_pos_index = new HashMap<Integer, String>();
+        inv_pos_index = new HashMap<Integer, String>();
 
-		TaggedSentence tagged_sentence;
+        TaggedSentence tagged_sentence;
 
-		int no_sentences = 0;
+        int no_sentences = 0;
 
-		for (int i = 0; i < tagged_sentences.size(); i++) {
-			no_sentences++;
-			tagged_sentence = tagged_sentences.get(i);
-			// System.out.println(tagged_sentence);
-			update(tagged_sentence);
-		}
+        for (int i = 0; i < tagged_sentences.size(); i++) {
+            no_sentences++;
+            tagged_sentence = tagged_sentences.get(i);
+            // System.out.println(tagged_sentence);
+            update(tagged_sentence);
+        }
 
-		computeModel();
+        computeModel();
 
-		System.out.println("Trained on " + no_sentences + "sentences\n");
+        System.out.println("Trained on " + no_sentences + "sentences\n");
 
-	}
+    }
 
-	private void computeModel() {
+    private void computeModel() {
 
-		Integer count;
-		Integer total;
-		Double value;
-		HashMap<String, Integer> counts;
-		HashMap<String, Double> map;
+        Integer count;
+        Integer total;
+        Double value;
+        HashMap<String, Integer> counts;
+        HashMap<String, Double> map;
 
-		for (String prevTag : state_transition_counts.keySet()) {
+        for (String prevTag : state_transition_counts.keySet()) {
 
-			counts = state_transition_counts.get(prevTag);
-			total = state_transition_total.get(prevTag);
+            counts = state_transition_counts.get(prevTag);
+            total = state_transition_total.get(prevTag);
 
-			map = new HashMap<String, Double>();
+            map = new HashMap<String, Double>();
 
-			for (String tag : counts.keySet()) {
-				count = counts.get(tag);
+            for (String tag : counts.keySet()) {
+                count = counts.get(tag);
 
-				value = new Double((double) count / (double) total);
+                value = new Double((double) count / (double) total);
 
-				map.put(tag, value);
-			}
+                map.put(tag, value);
+            }
 
-			state_transitions.put(prevTag, map);
-		}
+            state_transitions.put(prevTag, map);
+        }
 
-		for (String tag : state_transitions.keySet()) {
-			if (!pos_index.containsKey(tag)) {
-				pos_index.put(tag, new Integer(pos_index.keySet().size()));
+        for (String tag : state_transitions.keySet()) {
+            if (!pos_index.containsKey(tag)) {
+                pos_index.put(tag, new Integer(pos_index.keySet().size()));
 
-				inv_pos_index.put(new Integer(pos_index.keySet().size()), tag);
-			}
-		}
+                inv_pos_index.put(new Integer(pos_index.keySet().size()), tag);
+            }
+        }
 
-		for (String tag : state_emmission_counts.keySet()) {
+        for (String tag : state_emmission_counts.keySet()) {
 
-			counts = state_emmission_counts.get(tag);
-			total = state_emmission_total.get(tag);
+            counts = state_emmission_counts.get(tag);
+            total = state_emmission_total.get(tag);
 
-			map = new HashMap<String, Double>();
+            map = new HashMap<String, Double>();
 
-			for (String token : counts.keySet()) {
-				count = counts.get(token);
+            for (String token : counts.keySet()) {
+                count = counts.get(token);
 
-				value = new Double((double) (count + 1) / ((double) total + (double) (token_freq.keySet().size() + 1)));
+                value = new Double((double) (count + 1) / ((double) total + (double) (token_freq.keySet().size() + 1)));
 
-				map.put(token, value);
-			}
+                map.put(token, value);
+            }
 
-			// smoothing
+            // smoothing
 
-			value = new Double((double) 1 / ((double) total + (double) (token_freq.keySet().size() + 1)));
+            value = new Double((double) 1 / ((double) total + (double) (token_freq.keySet().size() + 1)));
 
-			map.put("unkwn", value);
+            map.put("unkwn", value);
 
-			state_emmissions.put(tag, map);
+            state_emmissions.put(tag, map);
 
-		}
+        }
 
-	}
+    }
 
-	private void update(TaggedSentence tagged_sentence) {
+    private void update(TaggedSentence tagged_sentence) {
 
-		String prevTag;
-		String token;
-		String tag;
+        String prevTag;
+        String token;
+        String tag;
 
-		for (int i = 0; i < tagged_sentence.size(); i++) {
-			token = tagged_sentence.getToken(i);
+        for (int i = 0; i < tagged_sentence.size(); i++) {
+            token = tagged_sentence.getToken(i);
 
-			if (i > 0)
-				prevTag = tagged_sentence.getPOS(i - 1);
-			else
-				prevTag = "start";
+            if (i > 0)
+                prevTag = tagged_sentence.getPOS(i - 1);
+            else
+                prevTag = "start";
 
-			tag = tagged_sentence.getPOS(i);
+            tag = tagged_sentence.getPOS(i);
 
-			updateStateTransitions(prevTag, tag);
-			updateEmmissions(tag, token);
-			updateTokenFreq(token);
+            updateStateTransitions(prevTag, tag);
+            updateEmmissions(tag, token);
+            updateTokenFreq(token);
 
-		}
-	}
+        }
+    }
 
-	private void updateTokenFreq(String token) {
+    private void updateTokenFreq(String token) {
 
-		Integer freq;
+        Integer freq;
 
-		if (token_freq.containsKey(token)) {
-			freq = token_freq.get(token);
-			token_freq.put(token, new Integer(freq + 1));
+        if (token_freq.containsKey(token)) {
+            freq = token_freq.get(token);
+            token_freq.put(token, new Integer(freq + 1));
 
-		} else {
-			token_freq.put(token, new Integer(1));
-		}
+        } else {
+            token_freq.put(token, new Integer(1));
+        }
 
-	}
+    }
 
-	private void updateEmmissions(String tag, String token) {
-		HashMap<String, Integer> map;
-		Integer intValue;
+    private void updateEmmissions(String tag, String token) {
+        HashMap<String, Integer> map;
+        Integer intValue;
 
-		if (state_emmission_counts.containsKey(tag)) {
+        if (state_emmission_counts.containsKey(tag)) {
 
-			map = state_emmission_counts.get(tag);
+            map = state_emmission_counts.get(tag);
 
-			if (map.containsKey(token)) {
-				intValue = map.get(token);
+            if (map.containsKey(token)) {
+                intValue = map.get(token);
 
-				map.put(token, ++intValue);
+                map.put(token, ++intValue);
 
-			} else {
-				map.put(token, new Integer(1));
-			}
+            } else {
+                map.put(token, new Integer(1));
+            }
 
-			if (state_emmission_total.containsKey(tag)) {
+            if (state_emmission_total.containsKey(tag)) {
 
-				intValue = state_emmission_total.get(tag);
-				{
-					state_emmission_total.put(tag, ++intValue);
-				}
-			} else {
-				state_emmission_total.put(tag, new Integer(1));
-			}
+                intValue = state_emmission_total.get(tag);
+                {
+                    state_emmission_total.put(tag, ++intValue);
+                }
+            } else {
+                state_emmission_total.put(tag, new Integer(1));
+            }
 
-		} else {
-			map = new HashMap<String, Integer>();
-			map.put(token, new Integer(1));
+        } else {
+            map = new HashMap<String, Integer>();
+            map.put(token, new Integer(1));
 
-			state_emmission_counts.put(tag, map);
+            state_emmission_counts.put(tag, map);
 
-			state_emmission_total.put(tag, new Integer(1));
+            state_emmission_total.put(tag, new Integer(1));
 
-		}
+        }
 
-	}
+    }
 
-	private void updateStateTransitions(String prevTag, String tag) {
+    private void updateStateTransitions(String prevTag, String tag) {
 
-		HashMap<String, Integer> map;
-		Integer intValue;
+        HashMap<String, Integer> map;
+        Integer intValue;
 
-		if (state_transition_counts.containsKey(prevTag)) {
+        if (state_transition_counts.containsKey(prevTag)) {
 
-			map = state_transition_counts.get(prevTag);
+            map = state_transition_counts.get(prevTag);
 
-			if (map.containsKey(tag)) {
-				intValue = map.get(tag);
+            if (map.containsKey(tag)) {
+                intValue = map.get(tag);
 
-				map.put(tag, ++intValue);
+                map.put(tag, ++intValue);
 
-			} else {
-				map.put(tag, new Integer(1));
-			}
+            } else {
+                map.put(tag, new Integer(1));
+            }
 
-			if (state_transition_total.containsKey(prevTag)) {
+            if (state_transition_total.containsKey(prevTag)) {
 
-				intValue = state_transition_total.get(prevTag);
-				{
-					state_transition_total.put(prevTag, ++intValue);
-				}
-			} else {
-				state_transition_total.put(prevTag, new Integer(1));
-			}
+                intValue = state_transition_total.get(prevTag);
+                {
+                    state_transition_total.put(prevTag, ++intValue);
+                }
+            } else {
+                state_transition_total.put(prevTag, new Integer(1));
+            }
 
-		} else {
-			map = new HashMap<String, Integer>();
-			map.put(tag, new Integer(1));
+        } else {
+            map = new HashMap<String, Integer>();
+            map.put(tag, new Integer(1));
 
-			state_transition_counts.put(prevTag, map);
+            state_transition_counts.put(prevTag, map);
 
-			state_transition_total.put(prevTag, new Integer(1));
+            state_transition_total.put(prevTag, new Integer(1));
 
-		}
+        }
 
-	}
+    }
 
-	public TaggedSentence predict(Sentence sentence) {
+    public TaggedSentence predict(Sentence sentence) {
 
-		return viterbi(sentence);
-	}
+        return viterbi(sentence);
+    }
 
-	private TaggedSentence viterbi(Sentence sentence) {
+    private TaggedSentence viterbi(Sentence sentence) {
 
-		int k = state_transitions.keySet().size();
+        boolean isStart = true;
 
-		double delta[][] = new double[sentence.size()][k];
+        //int k = state_transitions.keySet().size();
 
-		int gamma[][] = new int[sentence.size()][k];
+        //double delta[][] = new double[sentence.size()][k];
 
-		TaggedSentence tagged_sentence = new TaggedSentence(sentence);
+        //int gamma[][] = new int[sentence.size()][k];
 
-		// Implement Viterbi
+        TaggedSentence tagged_sentence = new TaggedSentence(sentence);
 
-		return tagged_sentence;
+        // Implement Viterbi
 
-	}
+        Map<String, List<Map<String, String>>> viterbiMatrix = new HashMap<String, List<Map<String, String>>>();
 
-	private void printArray(double[][] delta, int i) {
+        for (int i = 0; i < sentence.size(); i++) {
+            Map<String, Double> tagsOfToken = b(tagged_sentence.getPOS(i), sentence.getToken(i));
+            for (Map.Entry<String, Double> entry : tagsOfToken.entrySet()) {
+                List<Map<String, String>> tmpList = new ArrayList<>();
+                Map<String, String> tmpMap = new HashMap<>();
+                if (isStart) {
+                    double transition_prob = a("start", entry.getKey());
+                    double v_prob = entry.getValue() * transition_prob;
+                    tmpMap.put("prob", Double.toString(v_prob));
+                    tmpMap.put("prev_tag", "start");
+                    tmpList.add(tmpMap);
+                    viterbiMatrix.put(entry.getKey(), tmpList);
 
-		System.out.print(i + ": ");
-		for (int k = 0; k < delta.length; k++) {
-			if (delta[i][k] > Double.NEGATIVE_INFINITY) {
-				System.out.print(this.inv_pos_index.get(new Integer(k)) + ":" + delta[i][k] + " ");
-			}
-		}
+                } else {
+                    double max_v_prob = 0;
+                    String max_prev_tag = "";
 
-		System.out.print("\n");
+                    for (Map.Entry<String, List<Map<String, String>>> vEntry : viterbiMatrix.entrySet()) {
+                        tmpList = vEntry.getValue();
+                        double transition_prob = a(tmpList.get(i - 1).get("prev_tag"), entry.getKey());
+                        double v_prob = entry.getValue() * transition_prob * Double.parseDouble(tmpList.get(i - 1).get("prob"));
 
-	}
+                        if (max_v_prob < v_prob) {
+                            max_v_prob = v_prob;
+                            max_prev_tag = vEntry.getKey();
+                        }
+                    }
 
-	private double delta(String i, int j, HashMap<Integer, HashMap<String, Double>> delta) {
+                    tmpMap.put("prob", Double.toString(max_v_prob));
+                    tmpMap.put("tag", max_prev_tag);
+                    tmpList.add(tmpMap);
+                    viterbiMatrix.put(entry.getKey(), tmpList);
+                }
+            }
+            isStart = false;
+        }
 
-		HashMap<String, Double> map;
 
-		if (delta.containsKey(new Integer(j))) {
-			map = delta.get(j);
+        for (Map.Entry<String, List<Map<String, String>>> vEntry : viterbiMatrix.entrySet()) {
+            System.out.print("sentence: " + sentence.size() + " - " + "list: " + vEntry.getValue().size());
+        }
 
-			if (map.containsKey(i))
+        return tagged_sentence;
 
-				return ((Double) map.get(i)).doubleValue();
+    }
 
-		}
+    private void printArray(double[][] delta, int i) {
 
-		return 0.0;
-	}
+        System.out.print(i + ": ");
+        for (int k = 0; k < delta.length; k++) {
+            if (delta[i][k] > Double.NEGATIVE_INFINITY) {
+                System.out.print(this.inv_pos_index.get(new Integer(k)) + ":" + delta[i][k] + " ");
+            }
+        }
 
-	public double b(String tag, String token) {
-		
-		// implement b method. Emission
+        System.out.print("\n");
 
-		return state_emmissions.get(tag).get(token);
+    }
 
-	}
+    private double delta(String i, int j, HashMap<Integer, HashMap<String, Double>> delta) {
 
-	private double a(String tag, String nextTag) {
+        HashMap<String, Double> map;
 
-		// implement a method. Transition
+        if (delta.containsKey(new Integer(j))) {
+            map = delta.get(j);
 
-		return state_transitions.get(tag).get(nextTag);
-	}
+            if (map.containsKey(i))
 
-//	@Override
-//	 public String toString() {
-//		 return "HMM_Tagger [state_transition_counts=" + state_transition_counts + ",
-//		 state_emmission_counts="
-//		 + state_emmission_counts + ", state_transition_total=" +
-//		 state_transition_total
-//		 + ", state_emmission_total=" + state_emmission_total + ", state_transitions="
-//		 + state_transitions
-//		 + ", state_emmissions=" + state_emmissions + ", pos_index=" + pos_index + ",
-//		 inv_pos_index="
-//		 + inv_pos_index + ", token_freq=" + token_freq + "]";
-//	 }
+                return ((Double) map.get(i)).doubleValue();
 
-	public String toString() {
-		String string = "";
+        }
 
-		String prevTag, tag, token;
+        return 0.0;
+    }
 
-		HashMap<String, Double> map;
+    public Map<String, Double>/*double*/ b(String tag, String token) {
 
-		string += "===================================================\n";
+        // implement b method. Emission
+        Map<String, Double> tagOfToken = new HashMap<>();
+        if (!tag.equalsIgnoreCase("unkwn")) {
+            for (Map.Entry<String, HashMap<String, Double>> entry : state_emmissions.entrySet()) {
+                if (entry.getValue().containsKey(token)) {
+                    tagOfToken.put(entry.getKey(), entry.getValue().get(token));
+                }
+            }
+        }
 
-		string += "State transition probabilities for " + state_transitions.keySet().size() + " tags:\n";
+        //state_emmissions.get(tag).get(token)
+        return tagOfToken;
 
-		for (Iterator it = state_transitions.keySet().iterator(); it.hasNext();) {
+    }
 
-			prevTag = (String) it.next();
+    private double a(String tag, String nextTag) {
 
-			string += prevTag + ": ";
+        // implement a method. Transition
 
-			map = state_transitions.get(prevTag);
+        return state_transitions.get(tag).get(nextTag);
+    }
 
-			for (Iterator it2 = map.keySet().iterator(); it2.hasNext();) {
-				tag = (String) it2.next();
+    public String toString() {
+        String string = "";
 
-				string += tag + "(" + map.get(tag) + ")";
-			}
+        String prevTag, tag, token;
 
-			string += "\n";
+        HashMap<String, Double> map;
 
-		}
+        string += "===================================================\n";
 
-		string += "===================================================";
+        string += "State transition probabilities for " + state_transitions.keySet().size() + " tags:\n";
 
-		string += "State emmission probabilities for " + state_emmissions.keySet().size() + " tokens:\n";
+        for (Iterator it = state_transitions.keySet().iterator(); it.hasNext(); ) {
 
-		for (Iterator it = state_emmissions.keySet().iterator(); it.hasNext();) {
+            prevTag = (String) it.next();
 
-			tag = (String) it.next();
+            string += prevTag + ": ";
 
-			string += tag + ": ";
+            map = state_transitions.get(prevTag);
 
-			map = state_emmissions.get(tag);
+            for (Iterator it2 = map.keySet().iterator(); it2.hasNext(); ) {
+                tag = (String) it2.next();
 
-			for (Iterator it2 = map.keySet().iterator(); it2.hasNext();) {
-				token = (String) it2.next();
+                string += tag + "(" + map.get(tag) + ")";
+            }
 
-				string += token + "(" + map.get(token) + ")";
-			}
+            string += "\n";
 
-			string += "\n";
+        }
 
-		}
+        string += "===================================================";
 
-		return string;
-	}
+        string += "State emmission probabilities for " + state_emmissions.keySet().size() + " tokens:\n";
+
+        for (Iterator it = state_emmissions.keySet().iterator(); it.hasNext(); ) {
+
+            tag = (String) it.next();
+
+            string += tag + ": ";
+
+            map = state_emmissions.get(tag);
+
+            for (Iterator it2 = map.keySet().iterator(); it2.hasNext(); ) {
+                token = (String) it2.next();
+
+                string += token + "(" + map.get(token) + ")";
+            }
+
+            string += "\n";
+
+        }
+
+        return string;
+    }
 
 }

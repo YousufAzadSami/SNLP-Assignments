@@ -37,7 +37,7 @@ public class Test {
 	   
 	    tagger.train(train);
 	       
-	    List<TaggedSentence> test = reader.getSentences(50001, reader.size());
+	    List<TaggedSentence> test = reader.getSentences(50001, 50003/*reader.size()*/);
 	
 	    evaluator.evaluate(tagger, test);
 	    
