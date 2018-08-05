@@ -18,7 +18,7 @@ public class Test {
 	public static void main(String[] args) throws IOException, InterruptedException{
 			
 		TigerCorpusReader reader = new TigerCorpusReader();
-		String corpusPath = "../data/tiger_release_dec05.xml";
+		String corpusPath = "../data/tiger_release_dec05-utf8.xml";
 		reader.read(corpusPath);
 		
 		BufferedWriter output = new BufferedWriter(new FileWriter(corpusPath));
@@ -37,7 +37,7 @@ public class Test {
 	   
 	    tagger.train(train);
 	       
-	    List<TaggedSentence> test = reader.getSentences(50001, 50003/*reader.size()*/);
+	    List<TaggedSentence> test = reader.getSentences(50006, reader.size());
 	
 	    evaluator.evaluate(tagger, test);
 	    

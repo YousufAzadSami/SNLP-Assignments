@@ -1,5 +1,7 @@
 
 
+import sun.nio.cs.StandardCharsets;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.DataInputStream;
@@ -33,7 +35,7 @@ public class TigerCorpusReader implements CorpusReader{
 			  FileInputStream fstream = new FileInputStream(file);
 			  // Get the object of DataInputStream
 			  DataInputStream in = new DataInputStream(fstream);
-			  BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			  BufferedReader br = new BufferedReader(new InputStreamReader(in, java.nio.charset.StandardCharsets.UTF_8));
 			  String strLine;
 			  String token, tag;
 			  //Read File Line By Line
