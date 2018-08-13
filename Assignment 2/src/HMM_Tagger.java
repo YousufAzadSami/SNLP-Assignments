@@ -261,13 +261,13 @@ public class HMM_Tagger implements POS_Tagger {
          *
          */
 
-        Map<String, Map<Integer,Map<String, String>>> viterbiMatrix = new HashMap<>();
+        Map<String, Map<Integer, Map<String, String>>> viterbiMatrix = new HashMap<>();
 
         //populate viterbi matrix
         for (int i = 0; i < sentence.size(); i++) {
             Map<String, Double> tagsOfToken = b(tagged_sentence.getPOS(i), sentence.getToken(i));
             for (Map.Entry<String, Double> entry : tagsOfToken.entrySet()) {
-                Map<Integer,Map<String, String>> tmpPmap = new HashMap<>();
+                Map<Integer, Map<String, String>> tmpPmap = new HashMap<>();
                 Map<String, String> tmpMap = new HashMap<>();
 
                 if (i == 0) {
@@ -277,14 +277,14 @@ public class HMM_Tagger implements POS_Tagger {
                     tmpMap.put("prob", Double.toString(v_prob));
                     tmpMap.put("prev_tag", "start");
                     tmpMap.put("token", sentence.getToken(i));
-                    tmpPmap.put(i,tmpMap);
+                    tmpPmap.put(i, tmpMap);
                     viterbiMatrix.put(entry.getKey(), tmpPmap);
 
                 } else {
                     double max_v_prob = 0;
                     String max_prev_tag = "unkwn";
 
-                    for (Map.Entry<String, Map<Integer,Map<String, String>>> vEntry : viterbiMatrix.entrySet()) {
+                    for (Map.Entry<String, Map<Integer, Map<String, String>>> vEntry : viterbiMatrix.entrySet()) {
                         tmpPmap = vEntry.getValue();
                         //System.out.println("sentence: " + sentence.size() + " - list: " + tmpList.size());
 
@@ -304,7 +304,7 @@ public class HMM_Tagger implements POS_Tagger {
                     tmpMap.put("prob", Double.toString(max_v_prob));
                     tmpMap.put("prev_tag", max_prev_tag);
                     tmpMap.put("token", sentence.getToken(i));
-                    tmpPmap.put(i,tmpMap);
+                    tmpPmap.put(i, tmpMap);
                     viterbiMatrix.put(entry.getKey(), tmpPmap);
                 }
             }
@@ -314,7 +314,8 @@ public class HMM_Tagger implements POS_Tagger {
         //traverse back viterbi matrix for tags
         double max_v_prob = 0;
         String max_prev_tag = "unkwn";
-        for (Map.Entry<String, Map<Integer,Map<String, String>>> vEntry : viterbiMatrix.entrySet()) {
+        String max_current_tag = "unkwn";
+        for (Map.Entry<String, Map<Integer, Map<String, String>>> vEntry : viterbiMatrix.entrySet()) {
             //System.out.print("sentence: " + sentence.size() + " - " + "list: " + vEntry.getValue().size());
             if (vEntry.getValue().containsKey(sentence.size() - 1)) {
                 double v_prob = Double.parseDouble(vEntry.getValue().get(sentence.size() - 1).get("prob"));
@@ -322,6 +323,7 @@ public class HMM_Tagger implements POS_Tagger {
                 if (max_v_prob < v_prob) {
                     max_v_prob = v_prob;
                     max_prev_tag = vEntry.getValue().get(sentence.size() - 1).get("prev_tag");
+                    max_current_tag = vEntry.getKey();
                 }
             }
         }
@@ -331,14 +333,22 @@ public class HMM_Tagger implements POS_Tagger {
 
         // populate sentence tag back traversing viterbi matrix
         for (int i = sentence.size() - 2, j = 0; i >= 0; i--, j++) {
-            if(viterbiMatrix.get(sentence_tag.get(j)).containsKey(i)) {
+            if (viterbiMatrix.containsKey(sentence_tag.get(j)) && viterbiMatrix.get(sentence_tag.get(j)).containsKey(i)) {
                 sentence_tag.add(viterbiMatrix.get(sentence_tag.get(j)).get(i).get("prev_tag"));
+            } else{
+                sentence_tag.add("unkwn");
             }
+        }
+
+        List<String> sentence_tag_without_start = new ArrayList<>();
+        sentence_tag_without_start.add(max_current_tag);
+        for (int i = 0; i < sentence.size() - 1; i++) {
+            sentence_tag_without_start.add(sentence_tag.get(i));
         }
 
         //add tag and token to tagged sentence.
         for (int i = 0, j = sentence.size() - 1; i < sentence.size(); i++, j--) {
-            tagged_sentence.add(sentence.getToken(i), sentence_tag.get(j));
+            tagged_sentence.add(sentence.getToken(i), sentence_tag_without_start.get(j));
         }
 
         return tagged_sentence;
@@ -395,7 +405,7 @@ public class HMM_Tagger implements POS_Tagger {
         /**
          * if no tag found for the token return map of [unkwn]=0.0
          */
-        if(tagOfToken.size()==0){
+        if (tagOfToken.size() == 0) {
             tagOfToken.put("unkwn", 0.0);
         }
         //}
