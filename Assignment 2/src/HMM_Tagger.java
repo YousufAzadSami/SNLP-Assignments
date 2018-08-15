@@ -335,9 +335,10 @@ public class HMM_Tagger implements POS_Tagger {
         for (int i = sentence.size() - 2, j = 0; i >= 0; i--, j++) {
             if (viterbiMatrix.containsKey(sentence_tag.get(j)) && viterbiMatrix.get(sentence_tag.get(j)).containsKey(i)) {
                 sentence_tag.add(viterbiMatrix.get(sentence_tag.get(j)).get(i).get("prev_tag"));
-            } else{
-                sentence_tag.add("unkwn");
             }
+            // else{
+                // sentence_tag.add("unkwn");
+            // }
         }
 
         List<String> sentence_tag_without_start = new ArrayList<>();
@@ -406,7 +407,7 @@ public class HMM_Tagger implements POS_Tagger {
          * if no tag found for the token return map of [unkwn]=0.0
          */
         if (tagOfToken.size() == 0) {
-            tagOfToken.put("unkwn", 0.0);
+            tagOfToken.put("unkwn", 1.0);
         }
         //}
 
@@ -421,7 +422,7 @@ public class HMM_Tagger implements POS_Tagger {
         if (state_transitions.containsKey(tag) && state_transitions.get(tag).containsKey(nextTag)) {
             return state_transitions.get(tag).get(nextTag);
         }
-        return 0.0;
+        return 1.0;
     }
 
     public String toString() {
