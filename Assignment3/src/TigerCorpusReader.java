@@ -6,6 +6,7 @@ import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -33,7 +34,7 @@ public class TigerCorpusReader implements CorpusReader{
 			  FileInputStream fstream = new FileInputStream(file);
 			  // Get the object of DataInputStream
 			  DataInputStream in = new DataInputStream(fstream);
-			  BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			  BufferedReader br = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
 			  String strLine;
 			  String token, tag;
 			  //Read File Line By Line
