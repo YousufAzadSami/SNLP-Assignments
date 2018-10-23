@@ -278,11 +278,17 @@ public class HMM_Tagger implements POS_Tagger {
                 double max = 0.0;
                 for (Map.Entry<Integer, String> entry : inv_pos_index.entrySet()) {
                     if (j == 0) {
-                        max = max_start * a(inv_pos_index.get(i + 1), entry.getValue())
-                                * b(entry.getValue(), sentence.getToken(j));
+                        max = max_start * a(entry.getValue(), inv_pos_index.get(i + 1))
+                                * b(inv_pos_index.get(i + 1), sentence.getToken(j));
                     } else {
-                        max = delta[j - 1][i] * a(inv_pos_index.get(i + 1), entry.getValue())
-                                * b(entry.getValue(), sentence.getToken(j));
+                        if (delta[j - 1][i] > 0) {
+                            max = delta[j - 1][i] * a(entry.getValue(), inv_pos_index.get(i + 1))
+                                    * b(inv_pos_index.get(i + 1), sentence.getToken(j));
+                        }
+                        else {
+                            max = a(entry.getValue(), inv_pos_index.get(i + 1))
+                                    * b(inv_pos_index.get(i + 1), sentence.getToken(j));
+                        }
                     }
 
                     if (delta[j][i] < max) {
@@ -292,7 +298,7 @@ public class HMM_Tagger implements POS_Tagger {
             }
         }
 
-        for (int j = sentence.size()-1; j >=0 ; j--) {
+        for (int j = sentence.size() - 1; j >= 0; j--) {
             double max_prob = 0.0;
             int max_ind = 0;
             for (int i = 0; i < k; i++) {
