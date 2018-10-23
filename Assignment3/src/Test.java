@@ -23,7 +23,7 @@ public class Test {
         String corpusPath = "../data/tiger_release_dec05-utf8.xml";
         reader.read(corpusPath);
 
-        BufferedWriter output = new BufferedWriter(new FileWriter(corpusPath));
+        BufferedWriter output = new BufferedWriter(new FileWriter("output.csv"));
 
         reader.toFile(output);
 

@@ -305,7 +305,7 @@ public class InfoGenrator {
 			for (int i = 0; i < sentence.size(); i++) {
 				String k = "";
 				if(i == 0) {
-					k = "-1 " + sentence.tags.get(0);
+					k = "start " + sentence.tags.get(0);
 					if (getBiTagsFerquency().containsKey(k)) {
 						setBiTagsFerquency(k, getBiTagsFerquency().get(k) + 1);
 					}
