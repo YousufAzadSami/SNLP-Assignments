@@ -247,13 +247,13 @@ public class HMM_Tagger implements POS_Tagger {
 
         inv_pos_index = new HashMap<Integer, String>();*/
 
-        //int k = state_transitions.keySet().size();
+        int k = state_transitions.keySet().size();
 
-        //double delta[][] = new double[sentence.size()][k];
+        double delta[][] = new double[sentence.size()][k]; // possibility
 
-        //int gamma[][] = new int[sentence.size()][k];
+        int gamma[][] = new int[sentence.size()][k]; // index for tags
 
-        TaggedSentence tagged_sentence = new TaggedSentence();
+        TaggedSentence tagged_sentence = new TaggedSentence(sentence);
 
         // Implement Viterbi
 
@@ -261,96 +261,142 @@ public class HMM_Tagger implements POS_Tagger {
          *
          */
 
-        Map<String, Map<Integer, Map<String, String>>> viterbiMatrix = new HashMap<>();
+        // just keep the maximum probability and go forward
 
-        //populate viterbi matrix
-        for (int i = 0; i < sentence.size(); i++) {
-            Map<String, Double> tagsOfToken = b(tagged_sentence.getPOS(i), sentence.getToken(i));
-            for (Map.Entry<String, Double> entry : tagsOfToken.entrySet()) {
-                Map<Integer, Map<String, String>> tmpPmap = new HashMap<>();
-                Map<String, String> tmpMap = new HashMap<>();
+        // iterate through all the tag to get emission
+        double max_start = 0.0;
+        for (int i = 0; i < k; i++) {
+            double a = a("start", inv_pos_index.get(i + 1));
+            if (max_start < a) {
+                max_start = a;
+            }
+        }
 
-                if (i == 0) {
-                    // if start
-                    double transition_prob = a("start", entry.getKey());
-                    double v_prob = entry.getValue() * transition_prob;
-                    tmpMap.put("prob", Double.toString(v_prob));
-                    tmpMap.put("prev_tag", "start");
-                    tmpMap.put("token", sentence.getToken(i));
-                    tmpPmap.put(i, tmpMap);
-                    viterbiMatrix.put(entry.getKey(), tmpPmap);
 
-                } else {
-                    double max_v_prob = 0;
-                    String max_prev_tag = "unkwn";
-
-                    for (Map.Entry<String, Map<Integer, Map<String, String>>> vEntry : viterbiMatrix.entrySet()) {
-                        tmpPmap = vEntry.getValue();
-                        //System.out.println("sentence: " + sentence.size() + " - list: " + tmpList.size());
-
-                        // get previous tag from viterbi matrix
-                        if (tmpPmap.containsKey(i - 1)) {
-                            double transition_prob = a(tmpPmap.get(i - 1).get("prev_tag"), entry.getKey());
-                            double v_prob = entry.getValue() * transition_prob * Double.parseDouble(tmpPmap.get(i - 1).get("prob"));
-
-                            // get max multiplication result and tag
-                            if (max_v_prob < v_prob) {
-                                max_v_prob = v_prob;
-                                max_prev_tag = vEntry.getKey();
-                            }
-                        }
+        for (int j = 0; j < sentence.size(); j++) {
+            for (int i = 0; i < k; i++) {
+                double max = 0.0;
+                for (Map.Entry<Integer, String> entry : inv_pos_index.entrySet()) {
+                    if (j == 0) {
+                        max = max_start * a(inv_pos_index.get(i + 1), entry.getValue())
+                                * b(entry.getValue(), sentence.getToken(j));
+                    } else {
+                        max = delta[j - 1][i] * a(inv_pos_index.get(i + 1), entry.getValue())
+                                * b(entry.getValue(), sentence.getToken(j));
                     }
 
-                    tmpMap.put("prob", Double.toString(max_v_prob));
-                    tmpMap.put("prev_tag", max_prev_tag);
-                    tmpMap.put("token", sentence.getToken(i));
-                    tmpPmap.put(i, tmpMap);
-                    viterbiMatrix.put(entry.getKey(), tmpPmap);
+                    if (delta[j][i] < max) {
+                        delta[j][i] = max;
+                    }
                 }
             }
         }
 
-
-        //traverse back viterbi matrix for tags
-        double max_v_prob = 0;
-        String max_prev_tag = "unkwn";
-        String max_current_tag = "unkwn";
-        for (Map.Entry<String, Map<Integer, Map<String, String>>> vEntry : viterbiMatrix.entrySet()) {
-            //System.out.print("sentence: " + sentence.size() + " - " + "list: " + vEntry.getValue().size());
-            if (vEntry.getValue().containsKey(sentence.size() - 1)) {
-                double v_prob = Double.parseDouble(vEntry.getValue().get(sentence.size() - 1).get("prob"));
-                //get max viterbi row for last word
-                if (max_v_prob < v_prob) {
-                    max_v_prob = v_prob;
-                    max_prev_tag = vEntry.getValue().get(sentence.size() - 1).get("prev_tag");
-                    max_current_tag = vEntry.getKey();
+        for (int j = sentence.size()-1; j >=0 ; j--) {
+            double max_prob = 0.0;
+            int max_ind = 0;
+            for (int i = 0; i < k; i++) {
+                if (max_prob < delta[j][i]) {
+                    max_prob = delta[j][i];
+                    max_ind = i + 1;
                 }
             }
+            tagged_sentence.setTag(j, inv_pos_index.get(max_ind));
         }
 
-        List<String> sentence_tag = new ArrayList<>();
-        sentence_tag.add(max_prev_tag);
 
-        // populate sentence tag back traversing viterbi matrix
-        for (int i = sentence.size() - 2, j = 0; i >= 0; i--, j++) {
-            if (viterbiMatrix.containsKey(sentence_tag.get(j)) && viterbiMatrix.get(sentence_tag.get(j)).containsKey(i)) {
-                sentence_tag.add(viterbiMatrix.get(sentence_tag.get(j)).get(i).get("prev_tag"));
-            }
-            // else{
-                // sentence_tag.add("unkwn");
-            // }
-        }
-
-        List<String> sentence_tag_without_start = new ArrayList<>();
-        sentence_tag_without_start.add(max_current_tag);
-        for (int i = 0; i < sentence.size() - 1; i++) {
-            sentence_tag_without_start.add(sentence_tag.get(i));
-        }
-
-        //add tag and token to tagged sentence.
-        for (int i = 0, j = sentence.size() - 1; i < sentence.size(); i++, j--) {
-            tagged_sentence.add(sentence.getToken(i), sentence_tag_without_start.get(j));
-        }
+//        // earlier implimentation
+//
+//        Map<String, Map<Integer, Map<String, String>>> viterbiMatrix = new HashMap<>();
+//
+//        //populate viterbi matrix
+//        for (int i = 0; i < sentence.size(); i++) {
+//            Map<String, Double> tagsOfToken = b(sentence.getToken(i));
+//            for (Map.Entry<String, Double> entry : tagsOfToken.entrySet()) {
+//                Map<Integer, Map<String, String>> tmpPmap = new HashMap<>();
+//                Map<String, String> tmpMap = new HashMap<>();
+//
+//                if (i == 0) {
+//                    // if start
+//                    double transition_prob = a("start", entry.getKey());
+//                    double v_prob = entry.getValue() * transition_prob;
+//                    tmpMap.put("prob", Double.toString(v_prob));
+//                    tmpMap.put("prev_tag", "start");
+//                    tmpMap.put("token", sentence.getToken(i));
+//                    tmpPmap.put(i, tmpMap);
+//                    viterbiMatrix.put(entry.getKey(), tmpPmap);
+//
+//                } else {
+//                    double max_v_prob = 0;
+//                    String max_prev_tag = "unkwn";
+//
+//                    for (Map.Entry<String, Map<Integer, Map<String, String>>> vEntry : viterbiMatrix.entrySet()) {
+//                        tmpPmap = vEntry.getValue();
+//                        //System.out.println("sentence: " + sentence.size() + " - list: " + tmpList.size());
+//
+//                        // get previous tag from viterbi matrix
+//                        if (tmpPmap.containsKey(i - 1)) {
+//                            double transition_prob = a(tmpPmap.get(i - 1).get("prev_tag"), entry.getKey());
+//                            double v_prob = entry.getValue() * transition_prob * Double.parseDouble(tmpPmap.get(i - 1).get("prob"));
+//
+//                            // get max multiplication result and tag
+//                            if (max_v_prob < v_prob) {
+//                                max_v_prob = v_prob;
+//                                max_prev_tag = vEntry.getKey();
+//                            }
+//                        }
+//                    }
+//
+//                    tmpMap.put("prob", Double.toString(max_v_prob));
+//                    tmpMap.put("prev_tag", max_prev_tag);
+//                    tmpMap.put("token", sentence.getToken(i));
+//                    tmpPmap.put(i, tmpMap);
+//                    viterbiMatrix.put(entry.getKey(), tmpPmap);
+//                }
+//            }
+//        }
+//
+//
+//        //traverse back viterbi matrix for tags
+//        double max_v_prob = 0;
+//        String max_prev_tag = "unkwn";
+//        String max_current_tag = "unkwn";
+//        for (Map.Entry<String, Map<Integer, Map<String, String>>> vEntry : viterbiMatrix.entrySet()) {
+//            //System.out.print("sentence: " + sentence.size() + " - " + "list: " + vEntry.getValue().size());
+//            if (vEntry.getValue().containsKey(sentence.size() - 1)) {
+//                double v_prob = Double.parseDouble(vEntry.getValue().get(sentence.size() - 1).get("prob"));
+//                //get max viterbi row for last word
+//                if (max_v_prob < v_prob) {
+//                    max_v_prob = v_prob;
+//                    max_prev_tag = vEntry.getValue().get(sentence.size() - 1).get("prev_tag");
+//                    max_current_tag = vEntry.getKey();
+//                }
+//            }
+//        }
+//
+//        List<String> sentence_tag = new ArrayList<>();
+//        sentence_tag.add(max_prev_tag);
+//
+//        // populate sentence tag back traversing viterbi matrix
+//        for (int i = sentence.size() - 2, j = 0; i >= 0; i--, j++) {
+//            if (viterbiMatrix.containsKey(sentence_tag.get(j)) && viterbiMatrix.get(sentence_tag.get(j)).containsKey(i)) {
+//                sentence_tag.add(viterbiMatrix.get(sentence_tag.get(j)).get(i).get("prev_tag"));
+//            }
+//            // else{
+//            // sentence_tag.add("unkwn");
+//            // }
+//        }
+//
+//        List<String> sentence_tag_without_start = new ArrayList<>();
+//        sentence_tag_without_start.add(max_current_tag);
+//        for (int i = 0; i < sentence.size() - 1; i++) {
+//            sentence_tag_without_start.add(sentence_tag.get(i));
+//        }
+//
+//        //add tag and token to tagged sentence.
+//        for (int i = 0, j = sentence.size() - 1; i < sentence.size(); i++, j--) {
+//            tagged_sentence.add(sentence.getToken(i), sentence_tag_without_start.get(j));
+//        }
 
         return tagged_sentence;
 
@@ -385,7 +431,7 @@ public class HMM_Tagger implements POS_Tagger {
         return 0.0;
     }
 
-    public Map<String, Double>/*double*/ b(String tag, String token) {
+    private Map<String, Double>/*double*/ b(String token) {
 
         // implement b method. Emission
         /**
@@ -416,13 +462,25 @@ public class HMM_Tagger implements POS_Tagger {
 
     }
 
-    private double a(String tag, String nextTag) {
-
-        // implement a method. Transition
-        if (state_transitions.containsKey(tag) && state_transitions.get(tag).containsKey(nextTag)) {
-            return state_transitions.get(tag).get(nextTag);
+    private double b(String tag, String token) {
+        // implement b method. emission
+        if (state_emmissions.containsKey(tag)) {
+            if (state_emmissions.get(tag).containsKey(token)) {
+                return state_emmissions.get(tag).get(token);
+            }
         }
-        return 1.0;
+        return 0;
+
+    }
+
+    private double a(String tag, String nextTag) {
+        // implement a method. Transition
+        if (state_transitions.containsKey(tag)) {
+            if (state_transitions.get(tag).containsKey(nextTag)) {
+                return state_transitions.get(tag).get(nextTag);
+            }
+        }
+        return 0;
     }
 
     public String toString() {

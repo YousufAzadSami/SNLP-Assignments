@@ -73,6 +73,7 @@ public class MaxEntTagger implements POS_Tagger {
 
     //E(f_j)
     double[] empiricalCounts(List<TaggedSentence> data) {
+        // initializing a reference
         double[] empiricalCounts = new double[model.size()];
         // iterate through the data
         for (TaggedSentence sentence : data) {
@@ -84,13 +85,9 @@ public class MaxEntTagger implements POS_Tagger {
                 for (String feature : features) {
                     // passing empiricalCounts to updateEmpiricalCounts as reference
                     updateEmpiricalCounts(empiricalCounts, feature, sentence.getPOS(i), 1);
-
                 }
-
             }
         }
-        // System.out.print("Empirical Counts:\n");
-        // print(empiricalCounts);
         return empiricalCounts;
     }
 
