@@ -1,17 +1,15 @@
 package generateText;
 
-import java.util.List;
-import java.io.IOException;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPathExpressionException;
-
-import org.xml.sax.SAXException;
-
 import corpus.InfoGenrator;
 import corpus.TaggedSentence;
 import corpus.TigerCorpusReader;
+import org.xml.sax.SAXException;
 import smpling.Sampling;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPathExpressionException;
+import java.io.IOException;
+import java.util.List;
 
 public class GenerateText {
 

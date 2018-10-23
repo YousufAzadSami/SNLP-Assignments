@@ -1,10 +1,9 @@
 package smpling;
 
-import java.math.BigDecimal;
+import probability.Probability;
+
 import java.util.Map;
 import java.util.Random;
-
-import probability.Probability;
 
 public class Sampling {
 
