@@ -21,20 +21,69 @@ public class Sampling {
         return null;
     }
 
+    public String firstWord(Map<String, Double> conditionalTagsSortedByProbability,
+                            Map<String, Map<String, Double>> wordTagsSortedByProbability) {
+        double max = 0.0;
+        String maxKey = "";
+        for (Map.Entry<String, Double> entry : conditionalTagsSortedByProbability.entrySet()) {
+            if (entry.getKey().contains("start")) {
+                if (max < entry.getValue()) {
+                    max = entry.getValue();
+                    maxKey = entry.getKey();
+                }
+                double wSum = 0.0;
+                for (Map.Entry<String, Double> en : wordTagsSortedByProbability.get(maxKey.split(" ")[1])
+                        .entrySet()) {
+                    wSum += en.getValue();
+                    if (wSum - entry.getValue() >= 0) {
+                        return en.getKey();
+                    }
+                }
+            }
+
+        }
+        return null;
+    }
+
+
     public String conditionalSmple(Map<String, Double> conditionalTagsSortedByProbability,
                                    Map<String, Map<String, Double>> wordTagsSortedByProbability) {
         Random rand = new Random();
         double random = (double) rand.nextFloat();
         double sum = 0.0;
         for (Map.Entry<String, Double> entry : conditionalTagsSortedByProbability.entrySet()) {
-            for (Map.Entry<String, Double> en : wordTagsSortedByProbability.get(entry.getKey().split(" ")[1])
-                    .entrySet()) {
-                sum += (entry.getValue()*en.getValue());
-                if (sum-random >= 0) {
-                    return en.getKey();
+            if (!entry.getKey().contains("start")) {
+                sum += entry.getValue();
+                if (sum - random >= 0) {
+                    double wSum = 0.0;
+                    for (Map.Entry<String, Double> en : wordTagsSortedByProbability.get(entry.getKey().split(" ")[1])
+                            .entrySet()) {
+                        wSum += en.getValue();
+                        if (wSum - entry.getValue() >= 0) {
+                            return en.getKey();
+                        }
+                    }
                 }
             }
-            return null;// entry.getKey().split(" ")[1];
+        }
+        return null;
+    }
+
+    public String conditionalSmple2(Map<String, Double> conditionalTagsSortedByProbability,
+                                    Map<String, Map<String, Double>> wordTagsSortedByProbability) {
+        Random rand = new Random();
+        double random = (double) rand.nextFloat();
+        double sum = 0.0;
+        for (Map.Entry<String, Double> entry : conditionalTagsSortedByProbability.entrySet()) {
+            if (!entry.getKey().contains("start")) {
+                for (Map.Entry<String, Double> en : wordTagsSortedByProbability.get(entry.getKey().split(" ")[1])
+                        .entrySet()) {
+                    sum += (entry.getValue() * en.getValue());
+                    if (sum - random >= 0) {
+                        return en.getKey();
+                    }
+                }
+            }
 
         }
         return null;
