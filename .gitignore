@@ -11,3 +11,7 @@ Assignment 2/bin/
 Assignment3/bin/
 */.idea
 *.iml
+*.xml
+*.csv
+*/bin/
+*/.settings/
