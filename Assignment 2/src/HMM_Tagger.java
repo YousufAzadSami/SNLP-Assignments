@@ -19,6 +19,10 @@ public class HMM_Tagger implements POS_Tagger {
 
     HashMap<String, Integer> token_freq;
 
+    double min_value=0.0;
+
+
+
     public void train(List<TaggedSentence> tagged_sentences) {
 
         state_transition_counts = new HashMap<String, HashMap<String, Integer>>();
@@ -246,26 +250,16 @@ public class HMM_Tagger implements POS_Tagger {
         TaggedSentence tagged_sentence = new TaggedSentence(sentence);
 
         // Implement Viterbi
-        double max_start = 0.0;
-        for (int i = 0; i < k; i++) {
-            double a = a("start", inv_pos_index.get(i + 1));
-            if (max_start < a) {
-                max_start = a;
-            }
-        }
-
         for (int j = 0; j < sentence.size(); j++) {
             for (int i = 0; i < k; i++) {
-                double max = 0.0;
+                double max;
                 for (Map.Entry<Integer, String> entry : inv_pos_index.entrySet()) {
                     if (j == 0) {
-
-                        max = max_start * a(entry.getValue(), inv_pos_index.get(i + 1))
+                        max = a("start", inv_pos_index.get(i + 1))
                                 * b(inv_pos_index.get(i + 1), sentence.getToken(j));
                     } else {
                         max = delta[j - 1][entry.getKey()-1] * a(entry.getValue(), inv_pos_index.get(i + 1))
                                 * b(inv_pos_index.get(i + 1), sentence.getToken(j));
-
                     }
 
                     if (delta[j][i] < max) {
@@ -325,7 +319,7 @@ public class HMM_Tagger implements POS_Tagger {
             if (state_emmissions.get(tag).containsKey(token)) {
                 return state_emmissions.get(tag).get(token);
             } else {
-                return state_emmissions.get(tag).get("unkwn");
+                return state_emmissions.get(tag).get("unkwn")/100.0;
             }
         }
 
