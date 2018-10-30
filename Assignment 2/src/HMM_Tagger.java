@@ -263,13 +263,9 @@ public class HMM_Tagger implements POS_Tagger {
                         max = max_start * a(entry.getValue(), inv_pos_index.get(i + 1))
                                 * b(inv_pos_index.get(i + 1), sentence.getToken(j));
                     } else {
-                        if (delta[j - 1][i] > 0) {
-                            max = delta[j - 1][i] * a(entry.getValue(), inv_pos_index.get(i + 1))
-                                    * b(inv_pos_index.get(i + 1), sentence.getToken(j));
-                        } else {
-                            max = a(entry.getValue(), inv_pos_index.get(i + 1))
-                                    * b(inv_pos_index.get(i + 1), sentence.getToken(j));
-                        }
+                        max = delta[j - 1][entry.getKey()-1] * a(entry.getValue(), inv_pos_index.get(i + 1))
+                                * b(inv_pos_index.get(i + 1), sentence.getToken(j));
+
                     }
 
                     if (delta[j][i] < max) {
@@ -328,10 +324,12 @@ public class HMM_Tagger implements POS_Tagger {
         if (state_emmissions.containsKey(tag)) {
             if (state_emmissions.get(tag).containsKey(token)) {
                 return state_emmissions.get(tag).get(token);
+            } else {
+                return state_emmissions.get(tag).get("unkwn");
             }
         }
-        return 0;
 
+        return 0;
     }
 
     private double a(String tag, String nextTag) {
