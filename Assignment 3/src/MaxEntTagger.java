@@ -79,7 +79,7 @@ public class MaxEntTagger implements POS_Tagger {
         for (TaggedSentence sentence : data) {
             // iterate through each position of each sentence
             for (int i = 0; i < sentence.size(); i++) {
-                // extract feature for the sentence in each position
+                // extract feature for the sentence in each position (word and POS)
                 Set<String> features = extractor.extractFeatures(sentence, i);
                 // iterate through the features
                 for (String feature : features) {
@@ -112,7 +112,7 @@ public class MaxEntTagger implements POS_Tagger {
 
         // System.out.print("Computing model expectations!\n");
 
-        List<Set<String>> featureList = new ArrayList<Set<String>>();
+        List<Set<String>> featureList = new ArrayList<>();
 
         this.model.updateModel(model);
 
@@ -121,15 +121,18 @@ public class MaxEntTagger implements POS_Tagger {
         double[] expectations = new double[model.length];
 
         Set<String> features;
-
+        // looping through the sentences
         for (TaggedSentence sentence : data) {
+            // looping through the position of each sentence.
             for (int i = 0; i < sentence.size(); i++) {
+                // extract features and add to list
                 featureList.add(extractor.extractFeatures(sentence, i));
             }
 
         }
 
 
+        // looping through the featurelist
         for (int i = 0; i < featureList.size(); i++) {
             features = featureList.get(i);
 

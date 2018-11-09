@@ -243,9 +243,9 @@ public class HMM_Tagger implements POS_Tagger {
 
         int k = state_transitions.keySet().size();
 
-        double delta[][] = new double[sentence.size()][k]; // possibility
+        double delta[][] = new double[sentence.size()][k];
 
-        int gamma[][] = new int[sentence.size()][k]; // index for tags
+        int gamma[][] = new int[sentence.size()][k];
 
         TaggedSentence tagged_sentence = new TaggedSentence(sentence);
 
@@ -253,17 +253,21 @@ public class HMM_Tagger implements POS_Tagger {
         for (int j = 0; j < sentence.size(); j++) {
             for (int i = 0; i < k; i++) {
                 double max;
+                String maxPrevTag="";
                 for (Map.Entry<Integer, String> entry : inv_pos_index.entrySet()) {
                     if (j == 0) {
                         max = a("start", inv_pos_index.get(i + 1))
                                 * b(inv_pos_index.get(i + 1), sentence.getToken(j));
+                        maxPrevTag= "start";
                     } else {
                         max = delta[j - 1][entry.getKey()-1] * a(entry.getValue(), inv_pos_index.get(i + 1))
                                 * b(inv_pos_index.get(i + 1), sentence.getToken(j));
+                        maxPrevTag=entry.getValue();
                     }
 
                     if (delta[j][i] < max) {
                         delta[j][i] = max;
+                        gamma[j][i] = pos_index.get(maxPrevTag);
                     }
                 }
             }
