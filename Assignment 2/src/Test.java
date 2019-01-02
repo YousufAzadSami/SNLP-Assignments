@@ -17,7 +17,7 @@ public class Test {
     public static void main(String[] args) throws IOException, InterruptedException {
 
         TigerCorpusReader reader = new TigerCorpusReader();
-        String corpusPath = "../data/tiger_release_dec05-utf8.xml";
+        String corpusPath = "../data/tiger_release_dec05.xml";
         reader.read(corpusPath);
 
         BufferedWriter output = new BufferedWriter(new FileWriter("output.csv"));

@@ -14,6 +14,8 @@ public class HMM_Tagger implements POS_Tagger {
     HashMap<String, HashMap<String, Double>> state_transitions;
     HashMap<String, HashMap<String, Double>> state_emmissions;
 
+    // string e.x noun, adjective
+    // ex noun 1, adjective 2, adverb 3 ... to N
     HashMap<String, Integer> pos_index;
     HashMap<Integer, String> inv_pos_index;
 
@@ -240,31 +242,44 @@ public class HMM_Tagger implements POS_Tagger {
     }
 
     private TaggedSentence viterbi(Sentence sentence) {
-
+		
+    	// number of parts of speech. ex. if POS is Noun, Adjective, Adverb then k = 3
         int k = state_transitions.keySet().size();
-
+        
+        // viterbi matrix. The one Tanmoy showed, the one in the video 
         double delta[][] = new double[sentence.size()][k];
-
+        
+        // stacked trace of parts of speech for viterbi matrix upon finish
         int gamma[][] = new int[sentence.size()][k];
 
-        TaggedSentence tagged_sentence = new TaggedSentence(sentence);
+        TaggedSentence tagged_sentence = new TaggedSentence();
 
         // Implement Viterbi
+        
+        // iterating over all the tokens of the sentence
         for (int j = 0; j < sentence.size(); j++) {
+        	// iterating over all the POS available via it's index
             for (int i = 0; i < k; i++) {
                 double max;
                 String maxPrevTag="";
+                // iterating over the POS list again, n*n combinations 
                 for (Map.Entry<Integer, String> entry : inv_pos_index.entrySet()) {
                     if (j == 0) {
+                    	// max = transition probability * emision probability 
+                    	// max = probability of the first word being a noun(POS) * probability of the first word of the sentence being a noun
+                    	// refer video or notebook
                         max = a("start", inv_pos_index.get(i + 1))
                                 * b(inv_pos_index.get(i + 1), sentence.getToken(j));
                         maxPrevTag= "start";
                     } else {
+                    	// max = previous colulmn value * transition value (all possible) * emission
+                    	// delta[j - 1][entry.getKey()-1] == delta[previous column][POS are in rows, and every row contains the key value of that POS, -1 because inv_pos_index's value started from 1 but our viterbi matrix started from index 0]
                         max = delta[j - 1][entry.getKey()-1] * a(entry.getValue(), inv_pos_index.get(i + 1))
                                 * b(inv_pos_index.get(i + 1), sentence.getToken(j));
                         maxPrevTag=entry.getValue();
                     }
 
+                    // checking after every combination possible
                     if (delta[j][i] < max) {
                         delta[j][i] = max;
                         gamma[j][i] = pos_index.get(maxPrevTag);
@@ -273,16 +288,18 @@ public class HMM_Tagger implements POS_Tagger {
             }
         }
 
-        for (int j = sentence.size() - 1; j >= 0; j--) {
+        // iterating over each column
+        for (int j = 0; j < sentence.size(); j++) {
             double max_prob = 0.0;
             int max_ind = 0;
+            /// in each colulmn iterating over it's row value
             for (int i = 0; i < k; i++) {
                 if (max_prob < delta[j][i]) {
                     max_prob = delta[j][i];
                     max_ind = i + 1;
                 }
             }
-            tagged_sentence.setTag(j, inv_pos_index.get(max_ind));
+            tagged_sentence.add(sentence.getToken(j), inv_pos_index.get(max_ind));
         }
 
         return tagged_sentence;
